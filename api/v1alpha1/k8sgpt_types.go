@@ -154,7 +154,8 @@ type AnalysisConfig struct {
 
 // K8sGPTSpec defines the desired state of K8sGPT
 type K8sGPTSpec struct {
-	Version string `json:"version,omitempty"`
+	Sidecar *SidecarSpec `json:"sidecar,omitempty"`
+	Version string       `json:"version,omitempty"`
 	// +kubebuilder:default:=ghcr.io/k8sgpt-ai/k8sgpt
 	Repository       string                       `json:"repository,omitempty"`
 	ImagePullPolicy  corev1.PullPolicy            `json:"imagePullPolicy,omitempty"`
@@ -174,6 +175,12 @@ type K8sGPTSpec struct {
 	// Define the kubeconfig the Deployment must use.
 	// If empty, the Deployment will use the ServiceAccount provided by Kubernetes itself.
 	Kubeconfig *SecretRef `json:"kubeconfig,omitempty"`
+}
+
+type SidecarSpec struct {
+	Image   string          `json:"image"`
+	Command []string        `json:"command,omitempty"`
+	Env     []corev1.EnvVar `json:"env,omitempty"`
 }
 
 const (
