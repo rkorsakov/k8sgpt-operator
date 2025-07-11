@@ -1,7 +1,6 @@
 ## Optional enable distributed cache
 interplex:
   enabled: false
-
 serviceMonitor:
   enabled: false
   additionalLabels: {}
@@ -51,8 +50,8 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: ghcr.io/k8sgpt-ai/k8sgpt-operator
-      tag: v0.2.22  # x-release-please-version
+      repository: ghcr.io/rkorsakov/k8sgpt-operator
+      tag: latest  # x-release-please-version
     resources:
       limits:
         cpu: 500m
