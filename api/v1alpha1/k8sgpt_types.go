@@ -193,6 +193,7 @@ const (
 	Google          = "google"
 	GoogleVertexAI  = "googlevertexai"
 	IBMWatsonxAI    = "ibmwatsonxai"
+	gpt2giga        = "gpt2giga"
 )
 
 // K8sGPTStatus defines the observed state of K8sGPT
