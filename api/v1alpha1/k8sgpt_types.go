@@ -111,7 +111,7 @@ type AutoRemediation struct {
 type AISpec struct {
 	AutoRemediation AutoRemediation `json:"autoRemediation,omitempty"`
 	// +kubebuilder:default:=openai
-	// +kubebuilder:validation:Enum=ibmwatsonxai;openai;localai;azureopenai;amazonbedrock;cohere;amazonsagemaker;google;googlevertexai;customrest
+	// +kubebuilder:validation:Enum=ibmwatsonxai;openai;localai;azureopenai;amazonbedrock;cohere;amazonsagemaker;google;googlevertexai;customrest;gpt2giga
 	Backend string   `json:"backend"`
 	BackOff *BackOff `json:"backOff,omitempty"`
 	BaseUrl string   `json:"baseUrl,omitempty"`
