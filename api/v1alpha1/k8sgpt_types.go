@@ -176,11 +176,6 @@ type K8sGPTSpec struct {
 	Kubeconfig *SecretRef `json:"kubeconfig,omitempty"`
 }
 
-type SidecarSpec struct {
-	Image string          `json:"image"`
-	Env   []corev1.EnvVar `json:"env,omitempty"`
-}
-
 const (
 	OpenAI          = "openai"
 	AzureOpenAI     = "azureopenai"
