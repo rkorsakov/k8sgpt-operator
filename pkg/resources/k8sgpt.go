@@ -344,10 +344,10 @@ func GetDeployment(config v1alpha1.K8sGPT, outOfClusterMode bool, c client.Clien
 			},
 		},
 	}
-	if config.Spec.Sidecar != nil && config.Spec.AI.Backend == "gpt2giga" {
+	if config.Spec.AI.Backend == "gpt2giga" {
 		sidecarContainer := corev1.Container{
 			Name:    "sidecar",
-			Image:   config.Spec.Sidecar.Image,
+			Image:   "ghcr.io/rkorsakov/gpt2giga-proxy:latest",
 			Command: config.Spec.Sidecar.Command,
 			Env:     config.Spec.Sidecar.Env,
 			VolumeMounts: []corev1.VolumeMount{

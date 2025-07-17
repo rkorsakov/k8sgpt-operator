@@ -154,8 +154,7 @@ type AnalysisConfig struct {
 
 // K8sGPTSpec defines the desired state of K8sGPT
 type K8sGPTSpec struct {
-	Sidecar *SidecarSpec `json:"sidecar,omitempty"`
-	Version string       `json:"version,omitempty"`
+	Version string `json:"version,omitempty"`
 	// +kubebuilder:default:=ghcr.io/k8sgpt-ai/k8sgpt
 	Repository       string                       `json:"repository,omitempty"`
 	ImagePullPolicy  corev1.PullPolicy            `json:"imagePullPolicy,omitempty"`
@@ -178,9 +177,8 @@ type K8sGPTSpec struct {
 }
 
 type SidecarSpec struct {
-	Image   string          `json:"image"`
-	Command []string        `json:"command,omitempty"`
-	Env     []corev1.EnvVar `json:"env,omitempty"`
+	Image string          `json:"image"`
+	Env   []corev1.EnvVar `json:"env,omitempty"`
 }
 
 const (
