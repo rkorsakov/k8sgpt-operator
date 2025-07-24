@@ -130,7 +130,8 @@ type AISpec struct {
 	// +kubebuilder:default:="2048"
 	MaxTokens string `json:"maxTokens,omitempty"`
 	// +kubebuilder:default:="50"
-	Topk string `json:"topk,omitempty"`
+	Topk        string `json:"topk,omitempty"`
+	SidecarRepo string `json:"sidecarRepo,omitempty"`
 }
 
 type Trivy struct {

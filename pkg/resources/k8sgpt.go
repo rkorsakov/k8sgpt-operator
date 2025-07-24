@@ -347,7 +347,7 @@ func GetDeployment(config v1alpha1.K8sGPT, outOfClusterMode bool, c client.Clien
 	if config.Spec.AI.Backend == "gpt2giga" {
 		sidecarContainer := corev1.Container{
 			Name:  "sidecar",
-			Image: "ghcr.io/rkorsakov/gpt2giga-proxy:latest",
+			Image: config.Spec.AI.SidecarRepo,
 			Env: []corev1.EnvVar{
 				{
 					Name:  "GIGACHAT_MODEL",
