@@ -130,8 +130,7 @@ type AISpec struct {
 	// +kubebuilder:default:="2048"
 	MaxTokens string `json:"maxTokens,omitempty"`
 	// +kubebuilder:default:="50"
-	Topk        string `json:"topk,omitempty"`
-	SidecarRepo string `json:"sidecarRepo,omitempty"`
+	Topk string `json:"topk,omitempty"`
 }
 
 type Trivy struct {
@@ -151,6 +150,11 @@ type AnalysisConfig struct {
 	// Interval is the time between analysis runs
 	// +kubebuilder:validation:Pattern=`^[0-9]+[smh]$`
 	Interval string `json:"interval,omitempty"`
+}
+
+type SidecarSpec struct {
+	Repository string `json:"repository,omitempty"`
+	Version    string `json:"version,omitempty"`
 }
 
 // K8sGPTSpec defines the desired state of K8sGPT
@@ -174,7 +178,8 @@ type K8sGPTSpec struct {
 	Analysis         *AnalysisConfig              `json:"analysis,omitempty"`
 	// Define the kubeconfig the Deployment must use.
 	// If empty, the Deployment will use the ServiceAccount provided by Kubernetes itself.
-	Kubeconfig *SecretRef `json:"kubeconfig,omitempty"`
+	Kubeconfig *SecretRef   `json:"kubeconfig,omitempty"`
+	Sidecar    *SidecarSpec `json:"sidecar,omitempty"`
 }
 
 const (
