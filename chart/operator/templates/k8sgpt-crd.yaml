@@ -330,6 +330,13 @@ spec:
                 type: string
               version:
                 type: string
+              sidecar:
+                type: object
+                properties:
+                  repository:
+                    type: string
+                  version:
+                    type: string
             type: object
           status:
             description: |-
