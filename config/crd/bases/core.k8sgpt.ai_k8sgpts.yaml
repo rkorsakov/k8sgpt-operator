@@ -93,6 +93,7 @@ spec:
                     - google
                     - googlevertexai
                     - customrest
+                    - gpt2giga
                     type: string
                   baseUrl:
                     type: string
@@ -299,6 +300,13 @@ spec:
                       otherwise to an implementation-defined value. Requests cannot exceed Limits.
                       More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
+                type: object
+              sidecar:
+                properties:
+                  repository:
+                    type: string
+                  version:
+                    type: string
                 type: object
               sink:
                 properties:

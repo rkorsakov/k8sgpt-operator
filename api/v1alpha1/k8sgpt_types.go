@@ -111,7 +111,7 @@ type AutoRemediation struct {
 type AISpec struct {
 	AutoRemediation AutoRemediation `json:"autoRemediation,omitempty"`
 	// +kubebuilder:default:=openai
-	// +kubebuilder:validation:Enum=ibmwatsonxai;openai;localai;azureopenai;amazonbedrock;cohere;amazonsagemaker;google;googlevertexai;customrest
+	// +kubebuilder:validation:Enum=ibmwatsonxai;openai;localai;azureopenai;amazonbedrock;cohere;amazonsagemaker;google;googlevertexai;customrest;gpt2giga
 	Backend string   `json:"backend"`
 	BackOff *BackOff `json:"backOff,omitempty"`
 	BaseUrl string   `json:"baseUrl,omitempty"`
@@ -152,6 +152,11 @@ type AnalysisConfig struct {
 	Interval string `json:"interval,omitempty"`
 }
 
+type SidecarSpec struct {
+	Repository string `json:"repository,omitempty"`
+	Version    string `json:"version,omitempty"`
+}
+
 // K8sGPTSpec defines the desired state of K8sGPT
 type K8sGPTSpec struct {
 	Version string `json:"version,omitempty"`
@@ -173,7 +178,8 @@ type K8sGPTSpec struct {
 	Analysis         *AnalysisConfig              `json:"analysis,omitempty"`
 	// Define the kubeconfig the Deployment must use.
 	// If empty, the Deployment will use the ServiceAccount provided by Kubernetes itself.
-	Kubeconfig *SecretRef `json:"kubeconfig,omitempty"`
+	Kubeconfig *SecretRef   `json:"kubeconfig,omitempty"`
+	Sidecar    *SidecarSpec `json:"sidecar,omitempty"`
 }
 
 const (
@@ -186,6 +192,7 @@ const (
 	Google          = "google"
 	GoogleVertexAI  = "googlevertexai"
 	IBMWatsonxAI    = "ibmwatsonxai"
+	gpt2giga        = "gpt2giga"
 )
 
 // K8sGPTStatus defines the observed state of K8sGPT

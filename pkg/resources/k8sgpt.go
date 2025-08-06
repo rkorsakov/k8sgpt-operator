@@ -18,6 +18,7 @@ import (
 	"context"
 	err "errors"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	v1 "k8s.io/api/rbac/v1"
 
@@ -26,7 +27,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
@@ -251,6 +251,131 @@ func GetDeployment(config v1alpha1.K8sGPT, outOfClusterMode bool, c client.Clien
 	// Create deployment
 	image := config.Spec.Repository + ":" + config.Spec.Version
 	replicas := int32(1)
+	containers := []corev1.Container{
+		{
+			Name:            "k8sgpt",
+			ImagePullPolicy: config.Spec.ImagePullPolicy,
+			Image:           image,
+			Args: []string{
+				"serve",
+			},
+			Env: []corev1.EnvVar{
+				{
+					Name:  "K8SGPT_MODEL",
+					Value: config.Spec.AI.Model,
+				},
+				{
+					Name:  "K8SGPT_BACKEND",
+					Value: config.Spec.AI.Backend,
+				},
+				{
+					Name:  "K8SGPT_MAX_TOKENS",
+					Value: config.Spec.AI.MaxTokens,
+				},
+				{
+					Name:  "K8SGPT_TOP_K",
+					Value: config.Spec.AI.Topk,
+				},
+				{
+					Name:  "XDG_CONFIG_HOME",
+					Value: "/k8sgpt-data/.config",
+				},
+				{
+					Name:  "XDG_CACHE_HOME",
+					Value: "/k8sgpt-data/.cache",
+				},
+			},
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: 8080,
+				},
+			},
+			Resources: corev1.ResourceRequirements{
+				Limits: corev1.ResourceList{
+					corev1.ResourceCPU: func() resource.Quantity {
+						if config.Spec.Resources != nil {
+							if config.Spec.Resources.Limits != nil {
+								if cpuLimit, exists := config.Spec.Resources.Limits["cpu"]; exists {
+									return cpuLimit
+								}
+							}
+						}
+						return resource.MustParse("1")
+					}(),
+					corev1.ResourceMemory: func() resource.Quantity {
+						if config.Spec.Resources != nil {
+							if config.Spec.Resources.Limits != nil {
+								if memLimit, exists := config.Spec.Resources.Limits["memory"]; exists {
+									return memLimit
+								}
+							}
+						}
+						return resource.MustParse("512Mi")
+					}(),
+				},
+				Requests: corev1.ResourceList{
+					corev1.ResourceCPU: func() resource.Quantity {
+						if config.Spec.Resources != nil {
+							if config.Spec.Resources.Requests != nil {
+								if cpuRequest, exists := config.Spec.Resources.Requests["cpu"]; exists {
+									return cpuRequest
+								}
+							}
+						}
+						return resource.MustParse("0.2")
+					}(),
+					corev1.ResourceMemory: func() resource.Quantity {
+						if config.Spec.Resources != nil {
+							if config.Spec.Resources.Requests != nil {
+								if memRequest, exists := config.Spec.Resources.Requests["memory"]; exists {
+									return memRequest
+								}
+							}
+						}
+						return resource.MustParse("256Mi")
+					}(),
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					MountPath: "/k8sgpt-data",
+					Name:      "k8sgpt-vol",
+				},
+			},
+		},
+	}
+
+	if config.Spec.AI.Backend == "gpt2giga" {
+		sidecarImage := config.Spec.Sidecar.Repository + ":" + config.Spec.Sidecar.Version
+		sidecarContainer := corev1.Container{
+			Name:  "sidecar",
+			Image: sidecarImage,
+			Env: []corev1.EnvVar{
+				{
+					Name:  "GIGACHAT_MODEL",
+					Value: config.Spec.AI.Model,
+				},
+				{
+					Name: "GIGACHAT_CREDENTIALS",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: config.Spec.AI.Secret.Name,
+							},
+							Key: config.Spec.AI.Secret.Key,
+						},
+					},
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					MountPath: "/shared-data",
+					Name:      "k8sgpt-vol",
+				},
+			},
+		}
+		containers = append(containers, sidecarContainer)
+	}
 	deployment := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
@@ -281,99 +406,7 @@ func GetDeployment(config v1alpha1.K8sGPT, outOfClusterMode bool, c client.Clien
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: serviceAccountName,
-					Containers: []corev1.Container{
-						{
-							Name:            "k8sgpt",
-							ImagePullPolicy: config.Spec.ImagePullPolicy,
-							Image:           image,
-							Args: []string{
-								"serve",
-							},
-							Env: []corev1.EnvVar{
-								{
-									Name:  "K8SGPT_MODEL",
-									Value: config.Spec.AI.Model,
-								},
-								{
-									Name:  "K8SGPT_BACKEND",
-									Value: config.Spec.AI.Backend,
-								},
-								{
-									Name:  "K8SGPT_MAX_TOKENS",
-									Value: config.Spec.AI.MaxTokens,
-								},
-								{
-									Name:  "K8SGPT_TOP_K",
-									Value: config.Spec.AI.Topk,
-								},
-								{
-									Name:  "XDG_CONFIG_HOME",
-									Value: "/k8sgpt-data/.config",
-								},
-								{
-									Name:  "XDG_CACHE_HOME",
-									Value: "/k8sgpt-data/.cache",
-								},
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									ContainerPort: 8080,
-								},
-							},
-							Resources: corev1.ResourceRequirements{
-								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: func() resource.Quantity {
-										if config.Spec.Resources != nil {
-											if config.Spec.Resources.Limits != nil {
-												if cpuLimit, exists := config.Spec.Resources.Limits["cpu"]; exists {
-													return cpuLimit
-												}
-											}
-										}
-										return resource.MustParse("1")
-									}(),
-									corev1.ResourceMemory: func() resource.Quantity {
-										if config.Spec.Resources != nil {
-											if config.Spec.Resources.Limits != nil {
-												if memLimit, exists := config.Spec.Resources.Limits["memory"]; exists {
-													return memLimit
-												}
-											}
-										}
-										return resource.MustParse("512Mi")
-									}(),
-								},
-								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: func() resource.Quantity {
-										if config.Spec.Resources != nil {
-											if config.Spec.Resources.Requests != nil {
-												if cpuRequest, exists := config.Spec.Resources.Requests["cpu"]; exists {
-													return cpuRequest
-												}
-											}
-										}
-										return resource.MustParse("0.2")
-									}(),
-									corev1.ResourceMemory: func() resource.Quantity {
-										if config.Spec.Resources != nil {
-											if config.Spec.Resources.Requests != nil {
-												if memRequest, exists := config.Spec.Resources.Requests["memory"]; exists {
-													return memRequest
-												}
-											}
-										}
-										return resource.MustParse("256Mi")
-									}(),
-								},
-							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									MountPath: "/k8sgpt-data",
-									Name:      "k8sgpt-vol",
-								},
-							},
-						},
-					},
+					Containers:         containers,
 					Volumes: []corev1.Volume{
 						{
 							VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}},
