@@ -51,7 +51,11 @@ controllerManager:
         - ALL
     image:
       repository: ghcr.io/rkorsakov/k8sgpt-operator
+<<<<<<< HEAD
       tag: v0.3.1 # x-release-please-version
+=======
+      tag: v0.3.0-verbose  # x-release-please-version
+>>>>>>> origin/verbose
     resources:
       limits:
         cpu: 500m

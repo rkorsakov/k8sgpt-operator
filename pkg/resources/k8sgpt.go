@@ -258,6 +258,7 @@ func GetDeployment(config v1alpha1.K8sGPT, outOfClusterMode bool, c client.Clien
 			Image:           image,
 			Args: []string{
 				"serve",
+				"-v",
 			},
 			Env: []corev1.EnvVar{
 				{
